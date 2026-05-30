@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Vivaah Vibes - Smart Wedding Planner{% endblock %}</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container">
+            <div class="logo-circle">VV</div>
+            <h1 class="brand-name">Vivaah Vibes</h1>
+        </div>
+        <div class="nav-links">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-sign-out"></i> Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </div>
+    </header>
+
+    <!-- Flash Notification Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {% if category == 'success' %}
+                            <i class="fa-solid fa-circle-check"></i>
+                        {% elif category == 'danger' %}
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-info"></i>
+                        {% endif %}
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Grid -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Bottom Navigation (If user is logged in) -->
+    {% if session.get('user_id') %}
+        <div class="bottom-nav">
+            {% if session.get('role') == 'customer' %}
+                <a href="{{ url_for('customer_dashboard') }}" class="bottom-nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+                </a>
+            {% elif session.get('role') == 'vendor' %}
+                <a href="{{ url_for('vendor_dashboard') }}" class="bottom-nav-item {% if request.path == '/vendor/dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+                </a>
+            {% elif session.get('role') == 'admin' %}
+                <a href="{{ url_for('admin_dashboard') }}" class="bottom-nav-item {% if request.path == '/admin/dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+                </a>
+            {% endif %}
+            
+            <a href="{{ url_for('profile') }}" class="bottom-nav-item {% if request.path == '/profile' %}active{% endif %}">
+                <i class="fa-solid fa-user"></i>
+                <span>Profile</span>
+            </a>
+            
+            <a href="{{ url_for('help_page') }}" class="bottom-nav-item {% if request.path == '/help' %}active{% endif %}">
+                <i class="fa-solid fa-circle-question"></i>
+                <span>Help</span>
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Vivaah Vibes. Plan Your Dream Royal Wedding Stress-Free.</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

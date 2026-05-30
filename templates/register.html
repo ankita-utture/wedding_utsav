@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 600px;">
+    <div class="auth-header">
+        <h2>Join Vivaah Vibes</h2>
+        <p>Start planning or list your professional wedding services</p>
+    </div>
+    
+    <div class="auth-body">
+        <form action="{{ url_for('register') }}" method="POST">
+            <!-- Core Fields -->
+            <div class="form-group">
+                <label for="full_name"><i class="fa-solid fa-user"></i> Full Name / Business Owner Name</label>
+                <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="example@gmail.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone"><i class="fa-solid fa-phone"></i> Contact Phone Number</label>
+                <input type="tel" id="phone" name="phone" pattern="[0-9]{10}" class="form-control" placeholder="10-digit mobile number" title="Please enter a valid 10-digit phone number" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="city"><i class="fa-solid fa-location-dot"></i> City / Town</label>
+                <input type="text" id="city" name="city" class="form-control" placeholder="e.g. Kolhapur, Sangli, Karad" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Create password" required autocomplete="new-password">
+            </div>
+            
+            <div class="form-group">
+                <label for="role"><i class="fa-solid fa-users-gear"></i> I want to register as a:</label>
+                <select id="role" name="role" class="form-control" onchange="toggleVendorFields()" required>
+                    <option value="customer" selected>Customer (Planning a wedding)</option>
+                    <option value="vendor">Vendor (Offering wedding services)</option>
+                </select>
+            </div>
+            
+            <!-- Vendor-Specific Fields (Hidden by default) -->
+            <div id="vendor-fields" style="display: none; border-top: 2px dashed rgba(94, 25, 37, 0.2); padding-top: 20px; margin-top: 20px;">
+                <h3 style="font-size: 18px; margin-bottom: 15px; color: var(--royal-maroon);"><i class="fa-solid fa-briefcase"></i> Vendor Business Details</h3>
+                
+                <div class="form-group">
+                    <label for="business_name"><i class="fa-solid fa-store"></i> Business Name</label>
+                    <input type="text" id="business_name" name="business_name" class="form-control" placeholder="e.g. Royal Banquet Hall">
+                </div>
+                
+                <div class="form-group">
+                    <label for="service_type"><i class="fa-solid fa-bell-concierge"></i> Service Type</label>
+                    <select id="service_type" name="service_type" class="form-control">
+                        <option value="venue">Venue (Wedding Hall/Lawn)</option>
+                        <option value="catering">Catering Service</option>
+                        <option value="dj">DJ & Sounds</option>
+                        <option value="makeup">Parlour & Makeup Artist</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="base_price"><i class="fa-solid fa-indian-rupee-sign"></i> Base Price (₹)</label>
+                    <input type="number" id="base_price" name="base_price" class="form-control" placeholder="e.g. Price per plate or price per day">
+                    <small style="display: block; margin-top: 5px; color: var(--muted-gold);">
+                        * Venue/DJ: Price per day | Caterer: Price per plate | Makeup: Bridal Package price
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description"><i class="fa-solid fa-circle-info"></i> Business Description</label>
+                    <textarea id="description" name="description" class="form-control" rows="3" placeholder="Tell customers about your packages, setups, and specialties..."></textarea>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="margin-top: 15px;">Create Account</button>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ url_for('login') }}">Log In Here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleVendorFields() {
+        const role = document.getElementById('role').value;
+        const vendorFields = document.getElementById('vendor-fields');
+        const vendorInputs = vendorFields.querySelectorAll('input, select, textarea');
+        
+        if (role === 'vendor') {
+            vendorFields.style.display = 'block';
+            vendorInputs.forEach(input => {
+                if (input.id !== 'description') { // description is optional
+                    input.required = true;
+                }
+            });
+        } else {
+            vendorFields.style.display = 'none';
+            vendorInputs.forEach(input => {
+                input.required = false;
+            });
+        }
+    }
+</script>
+{% endblock %}

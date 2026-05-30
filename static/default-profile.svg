@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width="150" height="150">
+  <!-- Background Circle -->
+  <circle cx="75" cy="75" r="72" fill="#5E1925" stroke="#D4AF37" stroke-width="4" />
+  
+  <!-- Head Silhouette -->
+  <circle cx="75" cy="55" r="22" fill="#D4AF37" />
+  
+  <!-- Shoulders Silhouette -->
+  <path d="M35 118 C35 95, 50 85, 75 85 C100 85, 115 95, 115 118 Z" fill="#D4AF37" />
+</svg>

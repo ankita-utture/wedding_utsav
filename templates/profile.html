@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <!-- Profile Picture & Header -->
+        <div class="profile-header">
+            <div class="profile-pic-container">
+                <img src="{{ current_user.profile_pic_url or url_for('static', filename='default-profile.svg') }}" alt="Profile Picture" class="profile-pic">
+            </div>
+            
+            <form method="POST" action="{{ url_for('upload_profile_pic') }}" enctype="multipart/form-data" class="profile-upload-form">
+                <input type="file" name="profile_pic" accept="image/*" class="file-input" required>
+                <button type="submit" class="btn-upload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo</button>
+            </form>
+            
+            <h2 style="margin-top: 15px; color: var(--royal-maroon);">{{ current_user.full_name }}</h2>
+            <p style="text-transform: uppercase; font-size: 13px; letter-spacing: 1px; color: var(--muted-gold); font-weight: bold;">
+                <i class="fa-solid fa-address-card"></i> {{ current_user.role }} Account
+            </p>
+        </div>
+
+        <!-- Personal Details -->
+        <div class="profile-info">
+            <h3 style="font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid rgba(94, 25, 37, 0.1); padding-bottom: 5px;">
+                <i class="fa-solid fa-user-gear"></i> Personal Details
+            </h3>
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+            <p><strong>Phone:</strong> {{ current_user.phone }}</p>
+            <p><strong>Location:</strong> {{ current_user.city }}</p>
+        </div>
+    </div>
+
+    <!-- If User is a Customer: Show Wedding Dashboard Summary -->
+    {% if current_user.role == 'customer' %}
+        <!-- Budget Section -->
+        <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px; margin-bottom: 30px;">
+            <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+                <i class="fa-solid fa-calculator"></i> My Wedding Budget Plan
+            </h2>
+            {% if budget %}
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <p style="font-size: 16px; margin-bottom: 8px;"><strong>Total Budget:</strong></p>
+                        <p style="font-size: 32px; font-weight: bold; color: var(--royal-maroon); font-family: 'Playfair Display', serif;">
+                            ₹{{ "{:,.2f}".format(budget.total_budget) }}
+                        </p>
+                    </div>
+                    <div style="font-size: 15px; display: flex; flex-direction: column; gap: 8px; border-left: 2px solid var(--gold); padding-left: 20px;">
+                        <p><strong><i class="fa-solid fa-hotel"></i> Venue Budget:</strong> ₹{{ "{:,.2f}".format(budget.venue_allocated) }}</p>
+                        <p><strong><i class="fa-solid fa-plate-wheat"></i> Catering Budget:</strong> ₹{{ "{:,.2f}".format(budget.catering_allocated) }}</p>
+                        <p><strong><i class="fa-solid fa-music"></i> DJ & Sound Budget:</strong> ₹{{ "{:,.2f}".format(budget.dj_allocated) }}</p>
+                        <p><strong><i class="fa-solid fa-wand-magic-sparkles"></i> Parlour Budget:</strong> ₹{{ "{:,.2f}".format(budget.makeup_allocated) }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 20px 0;">
+                    <p style="margin-bottom: 15px; color: var(--muted-gold);">You have not configured your budget plan yet.</p>
+                    <a href="/budget" class="btn-upload" style="text-decoration: none; padding: 8px 20px;"><i class="fa-solid fa-wallet"></i> Setup Budget Planner</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Contacted Vendors Section -->
+        <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px;">
+            <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+                <i class="fa-solid fa-address-book"></i> Contacted Vendors (My Choices)
+            </h2>
+            {% if bookings %}
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    {% for booking in bookings %}
+                        <div style="background-color: var(--soft-cream); border-left: 5px solid var(--royal-maroon); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                            <div>
+                                <h3 style="font-size: 18px; margin-bottom: 5px;">{{ booking.business_name }}</h3>
+                                <p style="font-size: 13px; text-transform: uppercase; font-weight: bold; color: var(--gold); margin-bottom: 10px;">
+                                    <i class="fa-solid fa-tag"></i> {{ booking.service_type }}
+                                </p>
+                                <p style="font-size: 14px; margin-bottom: 5px;"><strong><i class="fa-solid fa-phone"></i> Phone:</strong> {{ booking.contact_info }}</p>
+                                <p style="font-size: 14px; margin-bottom: 5px;"><strong><i class="fa-solid fa-location-dot"></i> Location:</strong> {{ booking.location }}</p>
+                                <p style="font-size: 14px;"><strong><i class="fa-solid fa-calendar-day"></i> Wedding Date:</strong> {{ booking.wedding_date }}</p>
+                            </div>
+                            
+                            <!-- Leave Review Section -->
+                            <div style="width: 100%; max-width: 250px; background-color: var(--pure-white); border: 1px solid rgba(0,0,0,0.05); padding: 15px; border-radius: 8px;">
+                                <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--royal-maroon);">Leave a Review</h4>
+                                <form action="/submit_review/{{ booking.vendor_id }}" method="POST">
+                                    <div class="form-group" style="margin-bottom: 10px;">
+                                        <select name="rating" class="form-control" style="padding: 6px; font-size: 13px;" required>
+                                            <option value="5" selected>5 Stars (Excellent)</option>
+                                            <option value="4">4 Stars (Good)</option>
+                                            <option value="3">3 Stars (Average)</option>
+                                            <option value="2">2 Stars (Poor)</option>
+                                            <option value="1">1 Star (Terrible)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 10px;">
+                                        <textarea name="comment" class="form-control" rows="2" style="padding: 6px; font-size: 13px;" placeholder="Write a comment..." required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn-upload" style="width: 100%; font-size: 12px; padding: 6px;"><i class="fa-solid fa-paper-plane"></i> Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 20px 0; color: var(--muted-gold);">
+                    <i class="fa-solid fa-comments-dollar" style="font-size: 36px; margin-bottom: 10px;"></i>
+                    <p>You haven't contacted any vendors yet. Find budget-friendly partners on the Home dashboard!</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

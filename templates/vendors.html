@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Search {{ category | capitalize }}s - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1 style="text-transform: capitalize;">Available {{ category }}s</h1>
+    <p>Browse partners matching your wedding date and targeted budget limits.</p>
+</div>
+
+<!-- Filter Header Bar -->
+<div class="help-card" style="border: 1px solid var(--gold); border-radius: var(--border-radius); padding: 20px; margin-bottom: 30px; background-color: var(--soft-cream);">
+    <form action="/vendors" method="GET" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-end;">
+        <input type="hidden" name="type" value="{{ category }}">
+        
+        <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+            <label for="date" style="font-size: 13px;"><i class="fa-solid fa-calendar-day"></i> Wedding Date</label>
+            <input type="date" id="date" name="date" class="form-control" style="padding: 8px 12px; font-size: 14px;" value="{{ filters.date }}" required>
+        </div>
+
+        <div class="form-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
+            <label for="guests" style="font-size: 13px;"><i class="fa-solid fa-users"></i> Guest Count</label>
+            <input type="number" id="guests" name="guests" class="form-control" style="padding: 8px 12px; font-size: 14px;" placeholder="e.g. 200" value="{{ filters.guests if filters.guests else '' }}">
+        </div>
+
+        <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+            <label for="budget_limit" style="font-size: 13px;"><i class="fa-solid fa-indian-rupee-sign"></i> Max Budget Limit (₹)</label>
+            <input type="number" id="budget_limit" name="budget_limit" class="form-control" style="padding: 8px 12px; font-size: 14px;" placeholder="e.g. 100000" value="{{ filters.budget_limit if filters.budget_limit else '' }}">
+        </div>
+
+        <button type="submit" class="btn-primary" style="flex: 0.5; min-width: 100px; padding: 10px; font-size: 14px; text-transform: none; letter-spacing: 0;">
+            <i class="fa-solid fa-filter"></i> Apply Filters
+        </button>
+    </form>
+</div>
+
+<!-- Vendor Cards Grid -->
+{% if vendors %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
+        {% for vendor in vendors %}
+            <div class="card" style="text-align: left; padding: 0; display: flex; flex-direction: column; justify-content: space-between;">
+                <!-- Vendor Image Placeholder -->
+                <div style="width: 100%; height: 180px; background-color: var(--royal-maroon); position: relative; border-bottom: 2px solid var(--gold); display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                    {% if vendor.service_type == 'venue' %}
+                        <i class="fa-solid fa-hotel" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
+                    {% elif vendor.service_type == 'catering' %}
+                        <i class="fa-solid fa-plate-wheat" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
+                    {% elif vendor.service_type == 'dj' %}
+                        <i class="fa-solid fa-music" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
+                    {% else %}
+                        <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
+                    {% endif %}
+                    
+                    <!-- Rating Badge -->
+                    <div style="position: absolute; top: 15px; right: 15px; background-color: rgba(94, 25, 37, 0.9); border: 1px solid var(--gold); color: var(--gold); padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-star"></i>
+                        <span>
+                            {% if vendor.avg_rating %}
+                                {{ "{:.1f}".format(vendor.avg_rating) }} ({{ vendor.review_count }})
+                            {% else %}
+                                New
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Vendor Content -->
+                <div style="padding: 20px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 15px;">
+                    <div>
+                        <h3 style="font-size: 20px; color: var(--royal-maroon); margin-bottom: 5px;">{{ vendor.business_name }}</h3>
+                        <p style="font-size: 13px; color: var(--muted-gold); font-weight: bold; margin-bottom: 10px;">
+                            <i class="fa-solid fa-location-dot"></i> {{ vendor.location }}
+                        </p>
+                        <p style="font-size: 14px; line-height: 1.5; color: var(--charcoal); opacity: 0.8; margin-bottom: 15px;">
+                            {{ vendor.description }}
+                        </p>
+                    </div>
+
+                    <div>
+                        <!-- Specifications -->
+                        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; margin-bottom: 15px; font-size: 14px;">
+                            <span>
+                                <strong>Price:</strong> ₹{{ "{:,.2f}".format(vendor.base_price) }}
+                                {% if vendor.service_type == 'catering' %}
+                                    / plate
+                                {% else %}
+                                    / day
+                                {% endif %}
+                            </span>
+                            
+                            {% if vendor.service_type == 'venue' %}
+                                <span><strong>Capacity:</strong> {{ vendor.capacity }} guests</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Connect Action Form -->
+                        <form action="/connect/{{ vendor.vendor_id }}" method="POST" onsubmit="return confirm('Book and reveal direct contact information for {{ vendor.business_name }}?');">
+                            <input type="hidden" name="wedding_date" value="{{ filters.date }}">
+                            <input type="hidden" name="agreed_price" value="{{ vendor.base_price }}">
+                            <button type="submit" class="btn-primary" style="padding: 10px; font-size: 14px; text-transform: none; letter-spacing: 0;">
+                                <i class="fa-solid fa-phone"></i> Book & Connect Direct
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 60px 20px; color: var(--muted-gold); background-color: var(--pure-white); border-radius: var(--border-radius); border: 1px solid rgba(212, 175, 55, 0.2);">
+        <i class="fa-solid fa-face-frown" style="font-size: 48px; margin-bottom: 15px;"></i>
+        <p style="font-size: 18px; font-weight: 500; margin-bottom: 5px;">No matching vendors found</p>
+        <p style="font-size: 14px; margin-bottom: 20px;">Try adjusting your filters, increasing your budget limit, or selecting a different date.</p>
+        <a href="/budget" class="btn-upload" style="text-decoration: none; padding: 8px 25px;"><i class="fa-solid fa-wallet"></i> Adjust Budget Settings</a>
+    </div>
+{% endif %}
+{% endblock %}

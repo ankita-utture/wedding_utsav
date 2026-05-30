@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Subho Vivaah! Welcome, {{ session.get('name') }}</h1>
+    <p>Select a service to start planning your perfect royal wedding.</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- 1. Venue Selection -->
+    <div class="card" onclick="location.href='/vendors?type=venue'">
+        <div class="card-icon"><i class="fa-solid fa-hotel"></i></div>
+        <h3>Wedding Venues</h3>
+        <p>Browse royal lawns, AC banquet halls, and palaces matching your guest count and budget.</p>
+    </div>
+
+    <!-- 2. Catering Services -->
+    <div class="card" onclick="location.href='/vendors?type=catering'">
+        <div class="card-icon"><i class="fa-solid fa-plate-wheat"></i></div>
+        <h3>Catering Services</h3>
+        <p>Explore traditional and gourmet food buffets with customizable plate pricing.</p>
+    </div>
+
+    <!-- 3. DJs & Sound -->
+    <div class="card" onclick="location.href='/vendors?type=dj'">
+        <div class="card-icon"><i class="fa-solid fa-music"></i></div>
+        <h3>DJs & Sounds</h3>
+        <p>Book high-bass sounds, concert stages, and customized lights for your Baraat and Sangeet.</p>
+    </div>
+
+    <!-- 4. Parlour & Makeup -->
+    <div class="card" onclick="location.href='/vendors?type=makeup'">
+        <div class="card-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h3>Parlour & Makeup</h3>
+        <p>Book professional beauticians and airbrush artists for the bride, groom, and family.</p>
+    </div>
+
+    <!-- 5. Wedding Rituals -->
+    <div class="card" onclick="location.href='/rituals'">
+        <div class="card-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h3>Wedding Rituals</h3>
+        <p>Schedule dates for Haldi, Mehendi, Sangeet, and the Wedding, keeping track of bookings.</p>
+    </div>
+
+    <!-- 6. Budget Planner -->
+    <div class="card" onclick="location.href='/budget'">
+        <div class="card-icon"><i class="fa-solid fa-chart-pie"></i></div>
+        <h3>Budget Planner</h3>
+        <p>Input your total budget and dynamically allocate funds based on the services you need.</p>
+    </div>
+</div>
+{% endblock %}

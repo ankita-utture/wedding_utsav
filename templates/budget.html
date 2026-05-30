@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Budget Planner - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Smart Budget Optimizer</h1>
+    <p>Define your wedding goals, and our algorithm will split your budget dynamically.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-bottom: 50px;">
+    <!-- Budget Input Card -->
+    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px;">
+        <h2 style="font-size: 22px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px; color: var(--royal-maroon);">
+            <i class="fa-solid fa-calculator"></i> Set Budget Goals
+        </h2>
+        
+        <form action="{{ url_for('budget_page') }}" method="POST">
+            <div class="form-group">
+                <label for="total_budget"><i class="fa-solid fa-indian-rupee-sign"></i> Total Wedding Budget (₹)</label>
+                <input type="number" id="total_budget" name="total_budget" class="form-control" placeholder="e.g. 500000" min="5000" value="{{ budget.total_budget if budget else '' }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="wedding_date"><i class="fa-solid fa-calendar-day"></i> Wedding Date</label>
+                <input type="date" id="wedding_date" name="wedding_date" class="form-control" value="{{ session.get('wedding_date', '') }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label><i class="fa-solid fa-clipboard-list"></i> Select Services You Need:</label>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px; padding-left: 5px;">
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" name="services" value="venue" {% if not budget or budget.venue_allocated > 0 %}checked{% endif %}>
+                        <span><i class="fa-solid fa-hotel" style="color: var(--gold); width: 20px;"></i> Wedding Venue (Hall/Lawn)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" name="services" value="catering" {% if not budget or budget.catering_allocated > 0 %}checked{% endif %}>
+                        <span><i class="fa-solid fa-plate-wheat" style="color: var(--gold); width: 20px;"></i> Catering Service (Food)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" name="services" value="dj" {% if not budget or budget.dj_allocated > 0 %}checked{% endif %}>
+                        <span><i class="fa-solid fa-music" style="color: var(--gold); width: 20px;"></i> DJ & Sounds</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" name="services" value="makeup" {% if not budget or budget.makeup_allocated > 0 %}checked{% endif %}>
+                        <span><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--gold); width: 20px;"></i> Parlour & Makeup</span>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="margin-top: 15px;">Calculate & Save Split</button>
+        </form>
+    </div>
+
+    <!-- Budget Results Breakdown -->
+    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <h2 style="font-size: 22px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px; color: var(--royal-maroon);">
+                <i class="fa-solid fa-chart-pie"></i> Dynamic Allocation
+            </h2>
+            
+            {% if budget %}
+                <div style="margin-bottom: 25px;">
+                    <p style="font-size: 15px; color: var(--muted-gold); margin-bottom: 5px;">Configured Total Budget:</p>
+                    <p style="font-size: 36px; font-weight: bold; color: var(--royal-maroon); font-family: 'Playfair Display', serif;">
+                        ₹{{ "{:,.2f}".format(budget.total_budget) }}
+                    </p>
+                    <p style="font-size: 14px; margin-top: 5px; color: var(--charcoal);"><i class="fa-solid fa-clock"></i> Wedding Date: <strong>{{ session.get('wedding_date') }}</strong></p>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Venue Allocated -->
+                    {% if budget.venue_allocated > 0 %}
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
+                                <span><i class="fa-solid fa-hotel"></i> Venue Budget</span>
+                                <span>₹{{ "{:,.2f}".format(budget.venue_allocated) }}</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background-color: var(--soft-cream); border: 1px solid rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 100%; height: 100%; background-color: var(--royal-maroon);"></div>
+                            </div>
+                            <div style="text-align: right; margin-top: 5px;">
+                                <a href="/vendors?type=venue" style="font-size: 12px; color: var(--gold); text-decoration: none; font-weight: bold;">Find Venues &rarr;</a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Catering Allocated -->
+                    {% if budget.catering_allocated > 0 %}
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
+                                <span><i class="fa-solid fa-plate-wheat"></i> Catering Budget</span>
+                                <span>₹{{ "{:,.2f}".format(budget.catering_allocated) }}</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background-color: var(--soft-cream); border: 1px solid rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 100%; height: 100%; background-color: var(--royal-maroon);"></div>
+                            </div>
+                            <div style="text-align: right; margin-top: 5px;">
+                                <a href="/vendors?type=catering" style="font-size: 12px; color: var(--gold); text-decoration: none; font-weight: bold;">Find Caterers &rarr;</a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- DJ Allocated -->
+                    {% if budget.dj_allocated > 0 %}
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
+                                <span><i class="fa-solid fa-music"></i> DJ & Sound Budget</span>
+                                <span>₹{{ "{:,.2f}".format(budget.dj_allocated) }}</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background-color: var(--soft-cream); border: 1px solid rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 100%; height: 100%; background-color: var(--royal-maroon);"></div>
+                            </div>
+                            <div style="text-align: right; margin-top: 5px;">
+                                <a href="/vendors?type=dj" style="font-size: 12px; color: var(--gold); text-decoration: none; font-weight: bold;">Find DJs &rarr;</a>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Makeup Allocated -->
+                    {% if budget.makeup_allocated > 0 %}
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-bottom: 6px;">
+                                <span><i class="fa-solid fa-wand-magic-sparkles"></i> Parlour Budget</span>
+                                <span>₹{{ "{:,.2f}".format(budget.makeup_allocated) }}</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background-color: var(--soft-cream); border: 1px solid rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden;">
+                                <div style="width: 100%; height: 100%; background-color: var(--royal-maroon);"></div>
+                            </div>
+                            <div style="text-align: right; margin-top: 5px;">
+                                <a href="/vendors?type=makeup" style="font-size: 12px; color: var(--gold); text-decoration: none; font-weight: bold;">Find Parlours &rarr;</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 60px 20px; color: var(--muted-gold); flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <i class="fa-solid fa-wallet" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <p>Enter your wedding dates and total expected budget on the left to see the split recommendations dynamically.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

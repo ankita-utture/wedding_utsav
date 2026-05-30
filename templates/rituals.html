@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Wedding Rituals Timeline - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Wedding Rituals & Event Timeline</h1>
+    <p>Schedule your wedding functions and keep track of your schedule in a unified timeline.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; margin-bottom: 50px; align-items: start;">
+    <!-- Date Scheduler Form -->
+    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px;">
+        <h2 style="font-size: 22px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px; color: var(--royal-maroon);">
+            <i class="fa-solid fa-calendar-plus"></i> Schedule Functions
+        </h2>
+        
+        <form action="{{ url_for('rituals_page') }}" method="POST">
+            <div class="form-group">
+                <label for="haldi"><i class="fa-solid fa-seedling" style="color: #E3A813;"></i> Haldi Ceremony Date</label>
+                <input type="date" id="haldi" name="haldi_date" class="form-control" value="{{ rituals.haldi_date if rituals else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="mehendi"><i class="fa-solid fa-leaf" style="color: #2E8B57;"></i> Mehendi Ceremony Date</label>
+                <input type="date" id="mehendi" name="mehendi_date" class="form-control" value="{{ rituals.mehendi_date if rituals else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="sangeet"><i class="fa-solid fa-guitar" style="color: #A52A2A;"></i> Sangeet Ceremony Date</label>
+                <input type="date" id="sangeet" name="sangeet_date" class="form-control" value="{{ rituals.sangeet_date if rituals else '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="wedding"><i class="fa-solid fa-fire-burner" style="color: #D32F2F;"></i> Wedding Ceremony Date</label>
+                <input type="date" id="wedding" name="wedding_date" class="form-control" value="{{ rituals.wedding_date if rituals else '' }}">
+            </div>
+            
+            <button type="submit" class="btn-primary" style="margin-top: 15px;">Save Timeline Dates</button>
+        </form>
+    </div>
+
+    <!-- Visual Timeline -->
+    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px;">
+        <h2 style="font-size: 22px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px; color: var(--royal-maroon);">
+            <i class="fa-solid fa-timeline"></i> Wedding Timeline
+        </h2>
+        
+        {% if rituals and (rituals.haldi_date or rituals.mehendi_date or rituals.sangeet_date or rituals.wedding_date) %}
+            <div style="position: relative; padding-left: 30px; margin-top: 20px;">
+                <!-- Vertical Timeline Line -->
+                <div style="position: absolute; left: 9px; top: 10px; bottom: 10px; width: 4px; background-color: var(--gold); border-radius: 2px;"></div>
+                
+                <!-- Haldi Stop -->
+                {% if rituals.haldi_date %}
+                    <div style="position: relative; margin-bottom: 30px;">
+                        <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #E3A813; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
+                        <h3 style="font-size: 17px; margin-bottom: 4px; color: var(--royal-maroon);">Haldi Ceremony</h3>
+                        <p style="font-size: 14px; font-weight: 600; color: var(--charcoal); opacity: 0.8;">
+                            <i class="fa-regular fa-calendar"></i> {{ rituals.haldi_date }}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- Mehendi Stop -->
+                {% if rituals.mehendi_date %}
+                    <div style="position: relative; margin-bottom: 30px;">
+                        <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #2E8B57; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
+                        <h3 style="font-size: 17px; margin-bottom: 4px; color: var(--royal-maroon);">Mehendi Ceremony</h3>
+                        <p style="font-size: 14px; font-weight: 600; color: var(--charcoal); opacity: 0.8;">
+                            <i class="fa-regular fa-calendar"></i> {{ rituals.mehendi_date }}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- Sangeet Stop -->
+                {% if rituals.sangeet_date %}
+                    <div style="position: relative; margin-bottom: 30px;">
+                        <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #A52A2A; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
+                        <h3 style="font-size: 17px; margin-bottom: 4px; color: var(--royal-maroon);">Sangeet Night</h3>
+                        <p style="font-size: 14px; font-weight: 600; color: var(--charcoal); opacity: 0.8;">
+                            <i class="fa-regular fa-calendar"></i> {{ rituals.sangeet_date }}
+                        </p>
+                    </div>
+                {% endif %}
+
+                <!-- Wedding Stop -->
+                {% if rituals.wedding_date %}
+                    <div style="position: relative;">
+                        <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #D32F2F; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
+                        <h3 style="font-size: 17px; margin-bottom: 4px; color: var(--royal-maroon);">The Big Day (Wedding)</h3>
+                        <p style="font-size: 14px; font-weight: 600; color: var(--charcoal); opacity: 0.8;">
+                            <i class="fa-regular fa-calendar"></i> {{ rituals.wedding_date }}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 60px 20px; color: var(--muted-gold);">
+                <i class="fa-solid fa-timeline" style="font-size: 48px; margin-bottom: 15px;"></i>
+                <p>No dates set yet. Pick dates on the left to visualize your traditional wedding chronological events flow!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Vendor Dashboard - Vivaah Vibes{% endblock %}
+
+{% block content %}
+<div class="welcome-section">
+    <h1>Vendor Workspace: {{ vendor.business_name if vendor else session.get('name') }}</h1>
+    <p>Manage your services, update pricing, and view customer booking inquiries.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 50px;">
+    <!-- Vendor Profile Details Card -->
+    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 25px;">
+        <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+            <i class="fa-solid fa-briefcase"></i> Service Overview
+        </h2>
+        {% if vendor %}
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <p><strong>Business Name:</strong><br>{{ vendor.business_name }}</p>
+                <p><strong>Service Category:</strong><br><span style="text-transform: capitalize; background-color: var(--royal-maroon); color: var(--ivory); padding: 3px 10px; border-radius: 12px; font-size: 13px;">{{ vendor.service_type }}</span></p>
+                <p><strong>Base Price:</strong><br>₹{{ vendor.base_price }} {% if vendor.service_type == 'catering' %}per plate{% else %}per day/event{% endif %}</p>
+                {% if vendor.service_type == 'venue' %}
+                    <p><strong>Hall Capacity:</strong><br>{{ vendor.capacity }} guests</p>
+                {% endif %}
+                <p><strong>Location:</strong><br>{{ vendor.location }}</p>
+                <p><strong>Verification Status:</strong><br>
+                    {% if vendor.is_verified == 1 %}
+                        <span style="color: #2EAE60; font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Verified Partner</span>
+                    {% else %}
+                        <span style="color: var(--muted-gold); font-weight: bold;"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending Verification</span>
+                    {% endif %}
+                </p>
+            </div>
+        {% else %}
+            <p>No business details found. Please contact support.</p>
+        {% endif %}
+    </div>
+
+    <!-- Booking Requests Log -->
+    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 25px;">
+        <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+            <i class="fa-solid fa-address-book"></i> Customer Inquiries (Leads)
+        </h2>
+        
+        {% if bookings %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 15px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--royal-maroon); color: var(--royal-maroon); font-weight: bold;">
+                            <th style="padding: 10px;">Customer Name</th>
+                            <th style="padding: 10px;">Phone Number</th>
+                            <th style="padding: 10px;">Requested Date</th>
+                            <th style="padding: 10px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                            <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); hover: background-color: var(--soft-cream);">
+                                <td style="padding: 12px 10px; font-weight: 500;">{{ booking.customer_name }}</td>
+                                <td style="padding: 12px 10px;">{{ booking.customer_phone }}</td>
+                                <td style="padding: 12px 10px; font-weight: 600; color: var(--royal-maroon);">{{ booking.wedding_date }}</td>
+                                <td style="padding: 12px 10px;">
+                                    <span style="background-color: #E2F4E9; color: #1A5C37; padding: 4px 10px; border-radius: 12px; font-size: 13px;">
+                                        <i class="fa-solid fa-phone"></i> Contacted
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 40px 20px; color: var(--muted-gold);">
+                <i class="fa-regular fa-folder-open" style="font-size: 40px; margin-bottom: 10px;"></i>
+                <p>No booking inquiries yet. When customers click to get your contact details, their requests will appear here!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
