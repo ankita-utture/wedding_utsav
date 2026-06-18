@@ -2,14 +2,14 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
 import smtplib
-
+from dotenv import load_dotenv
 
 def sendemailnewregistration(to_email, user_name):
     # 1. Configuration Settings
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
-    sender_email = "ankitautture@gmail.com"
-    sender_password = "uvendirvqqezbvea"
+    sender_email = os.environ.get("EMAIL_HOST_USER")
+    sender_password = os.environ.get("EMAIL_HOST_PASSWORD")
 
     # 2. Setup the MIME Message
     message = MIMEMultipart("alternative")
@@ -19,15 +19,20 @@ def sendemailnewregistration(to_email, user_name):
 
     # 3. Read the HTML file safely
     try:
-        # Opens 'template.html' from the same directory as this script
-        with open("template.html", "r", encoding="utf-8") as file:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+        # 2. Look inside the emailtemplates folder right next to it
+        template_path = os.path.join(script_dir, "emailtemplates", "registration.html")
+        
+        # 3. Read the file safely
+        with open(template_path, "r", encoding="utf-8") as file:
             html_content = file.read()
 
-        # Replace the placeholder with the actual user's name
+        # 4. Replace the placeholder
         html_content = html_content.replace("{{user_name}}", user_name)
-
+    
     except FileNotFoundError:
-        print("❌ Error: template.html file not found!")
+        print("❌ Error: registration.html file not found!")
         return
 
     # Plain text fallback
