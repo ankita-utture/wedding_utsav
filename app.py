@@ -2,6 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from database import get_db_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+
+# Custom imports
+from sendemailtemplate import sendemailnewregistration
 import os
 
 app = Flask(__name__)
@@ -148,6 +151,7 @@ def register():
             
             conn.commit()
             flash('Registration successful! You can now log in.', 'success')
+            sendemailnewregistration(email,full_name)
             return redirect(url_for('login'))
         except Exception as e:
             conn.rollback()
