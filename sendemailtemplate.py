@@ -8,13 +8,13 @@ def sendemailnewregistration(to_email, user_name):
     # 1. Configuration Settings
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
-    sender_email = "your_email@vivaahvibes.com"
-    sender_password = "your_app_password"
+    sender_email = "ankitautture@gmail.com"
+    sender_password = "uvendirvqqezbvea"
 
     # 2. Setup the MIME Message
     message = MIMEMultipart("alternative")
-    message["Subject"] = "Welcome to Vivaah Vibes! 🎉"
-    message["From"] = f"Vivaah Vibes <{sender_email}>"
+    message["Subject"] = "Welcome to Wedding Utsav! 🎉"
+    message["From"] = f"Wedding Utsav <{sender_email}>"
     message["To"] = to_email
 
     # 3. Read the HTML file safely
@@ -31,7 +31,7 @@ def sendemailnewregistration(to_email, user_name):
         return
 
     # Plain text fallback
-    text_content = f"Namaste {user_name},\n\nThank you for registering with Vivaah Vibes! Your account has been successfully created."
+    text_content = f"Namaste {user_name},\n\nThank you for registering with Wedding Utsav! Your account has been successfully created."
 
     # Attach both parts
     message.attach(MIMEText(text_content, "plain"))
