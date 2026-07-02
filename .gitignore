@@ -1,24 +1,43 @@
-# --- Environment Variables (CRITICAL SECURITY) ---
+# Environment Variables
 .env
 .env.local
 .env.*.local
 *.env
 
-# --- Python Virtual Environments ---
+# Python Virtual Environments
 .venv/
 venv/
 ENV/
 env/
 
-# --- Python Cache and Compiled Code ---
+# Python Cache
 __pycache__/
 *.py[cod]
 *$py.class
 
-# --- Operating System Files ---
+# Build / Distribution
+build/
+dist/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# --- VS Code IDE Configuration (Optional) ---
-.vscode/
+# Git
+.git/
+.gitignore
+
+# Node
+node_modules/
+
+# Logs
+*.log
