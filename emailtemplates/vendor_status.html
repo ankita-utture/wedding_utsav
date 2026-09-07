@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vendor Partner Verification Update</title>
+    <style>
+        body { background-color: #FDFBF7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 8px; border: 1px solid #D4AF37; overflow: hidden; }
+        .header { background: #5E1925; color: #FFFDF9; padding: 20px; text-align: center; border-bottom: 3px solid #D4AF37; }
+        .content { padding: 30px; line-height: 1.6; }
+        .footer { background: #f4f4f4; padding: 15px; text-align: center; font-size: 12px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 style="margin:0; font-family: Georgia, serif;">Wedding Utsav Partner Portal</h2>
+        </div>
+        <div class="content">
+            <h3 style="color: #5E1925;">Namaste {{vendor_name}},</h3>
+            <p>{{status_message}}</p>
+            {% if notes %}
+            <div style="background-color: #FDF7E7; border-left: 4px solid #D4AF37; padding: 15px; margin: 20px 0;">
+                <p style="margin:0;"><strong>Admin Notes:</strong> {{notes}}</p>
+            </div>
+            {% endif %}
+            <p>Log in to your Vendor Dashboard to review your business listing status.</p>
+            <p>Warm regards,<br><strong>Wedding Utsav Partner Relations</strong></p>
+        </div>
+        <div class="footer">
+            &copy; 2026 Wedding Utsav. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

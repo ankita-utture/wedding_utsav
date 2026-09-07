@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Wedding Utsav - Smart Wedding Planner{% endblock %}</title>
+    <title>{% block title %}Wedding Utsav - Smart Wedding Marketplace{% endblock %}</title>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="shortcut icon" href="../static/wu.png" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='wu.png') }}" type="image/x-icon">
 
     {% block head %}{% endblock %}
 </head>
@@ -16,13 +16,17 @@
 
     <!-- Header -->
     <header>
-        <div class="logo-container">
+        <div class="logo-container" onclick="location.href='{{ url_for('index') }}'" style="cursor: pointer;">
             <div class="logo-circle">WU</div>
             <h1 class="brand-name">Wedding Utsav</h1>
         </div>
         <div class="nav-links">
             {% if session.get('user_id') %}
-                <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-sign-out"></i> Logout</a>
+                <span style="color: var(--gold); font-size: 14px; font-weight: 500; margin-right: 15px;">
+                    <i class="fa-solid fa-circle-user"></i> {{ session.get('name') }} 
+                    <span style="text-transform: uppercase; font-size: 11px; background: var(--gold); color: var(--royal-maroon); padding: 2px 6px; border-radius: 10px; margin-left: 5px;">{{ session.get('role') }}</span>
+                </span>
+                <a href="{{ url_for('logout') }}" class="logout-btn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
                 <a href="{{ url_for('register') }}">Register</a>
@@ -65,13 +69,13 @@
                 </a>
             {% elif session.get('role') == 'vendor' %}
                 <a href="{{ url_for('vendor_dashboard') }}" class="bottom-nav-item {% if request.path == '/vendor/dashboard' %}active{% endif %}">
-                    <i class="fa-solid fa-house"></i>
-                    <span>Home</span>
+                    <i class="fa-solid fa-briefcase"></i>
+                    <span>Workspace</span>
                 </a>
             {% elif session.get('role') == 'admin' %}
                 <a href="{{ url_for('admin_dashboard') }}" class="bottom-nav-item {% if request.path == '/admin/dashboard' %}active{% endif %}">
-                    <i class="fa-solid fa-house"></i>
-                    <span>Home</span>
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span>Admin</span>
                 </a>
             {% endif %}
             

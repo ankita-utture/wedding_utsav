@@ -4,8 +4,8 @@
 
 {% block content %}
 <div class="welcome-section">
-    <h1 style="text-transform: capitalize;">Available {{ category }}s</h1>
-    <p>Browse partners matching your wedding date and targeted budget limits.</p>
+    <h1 style="text-transform: capitalize;">Available Verified {{ category }}s</h1>
+    <p>Browse partners matching your wedding date, location, and targeted budget limits.</p>
 </div>
 
 <!-- Filter Header Bar -->
@@ -15,7 +15,7 @@
         
         <div class="form-group" style="flex: 1; min-width: 150px; margin-bottom: 0;">
             <label for="date" style="font-size: 13px;"><i class="fa-solid fa-calendar-day"></i> Wedding Date</label>
-            <input type="date" id="date" name="date" class="form-control" style="padding: 8px 12px; font-size: 14px;" value="{{ filters.date }}" required>
+            <input type="date" id="date" name="date" class="form-control" style="padding: 8px 12px; font-size: 14px;" value="{{ filters.date }}">
         </div>
 
         <div class="form-group" style="flex: 1; min-width: 120px; margin-bottom: 0;">
@@ -39,7 +39,8 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
         {% for vendor in vendors %}
             <div class="card" style="text-align: left; padding: 0; display: flex; flex-direction: column; justify-content: space-between;">
-                <!-- Vendor Image Placeholder -->
+                
+                <!-- Vendor Image Placeholder & Badges -->
                 <div style="width: 100%; height: 180px; background-color: var(--royal-maroon); position: relative; border-bottom: 2px solid var(--gold); display: flex; justify-content: center; align-items: center; overflow: hidden;">
                     {% if vendor.service_type == 'venue' %}
                         <i class="fa-solid fa-hotel" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
@@ -49,6 +50,23 @@
                         <i class="fa-solid fa-music" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
                     {% else %}
                         <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 60px; color: var(--gold); opacity: 0.8;"></i>
+                    {% endif %}
+                    
+                    <!-- Verification Badge -->
+                    <div style="position: absolute; top: 15px; left: 15px; background-color: #2EAE60; color: #ffffff; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-shield-halved"></i> VERIFIED
+                    </div>
+
+                    <!-- Discount Badge if applicable -->
+                    {% if vendor.discount_type != 'none' and vendor.discount_value > 0 %}
+                        <div style="position: absolute; bottom: 15px; left: 15px; background-color: #A82E2E; color: #FFFDF9; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; border: 1px solid var(--gold);">
+                            <i class="fa-solid fa-percent"></i> 
+                            {% if vendor.discount_type == 'percentage' %}
+                                {{ vendor.discount_value }}% OFF
+                            {% else %}
+                                ₹{{ "{:,.0f}".format(vendor.discount_value) }} OFF
+                            {% endif %}
+                        </div>
                     {% endif %}
                     
                     <!-- Rating Badge -->
@@ -77,40 +95,56 @@
                     </div>
 
                     <div>
-                        <!-- Specifications -->
-                        <div style="display: flex; justify-content: space-between; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 15px; margin-bottom: 15px; font-size: 14px;">
-                            <span>
-                                <strong>Price:</strong> ₹{{ "{:,.2f}".format(vendor.base_price) }}
-                                {% if vendor.service_type == 'catering' %}
-                                    / plate
-                                {% else %}
-                                    / day
+                        <!-- Specifications & Pricing Breakdown -->
+                        <div style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 12px; margin-bottom: 15px; font-size: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>
+                                    <strong>Agreed Price:</strong> 
+                                    {% if vendor.discount_amount > 0 %}
+                                        <span style="text-decoration: line-through; color: #777; font-size: 13px; margin-right: 5px;">₹{{ "{:,.2f}".format(vendor.original_price) }}</span>
+                                        <span style="color: #2EAE60; font-weight: bold;">₹{{ "{:,.2f}".format(vendor.final_price) }}</span>
+                                    {% else %}
+                                        <strong>₹{{ "{:,.2f}".format(vendor.final_price) }}</strong>
+                                    {% endif %}
+                                </span>
+                                {% if vendor.service_type == 'venue' %}
+                                    <span><strong>Cap:</strong> {{ vendor.capacity }}</span>
                                 {% endif %}
-                            </span>
-                            
-                            {% if vendor.service_type == 'venue' %}
-                                <span><strong>Capacity:</strong> {{ vendor.capacity }} guests</span>
-                            {% endif %}
+                            </div>
+                            <div style="font-size: 12px; color: var(--muted-gold); margin-top: 4px;">
+                                20% Advance Required: <strong style="color: var(--royal-maroon);">₹{{ "{:,.2f}".format(vendor.advance_required) }}</strong>
+                            </div>
                         </div>
 
+                        <!-- Backend Availability Warning -->
+                        {% if filters.date and not vendor.is_available %}
+                            <div style="background: #FCE8E6; color: #A82E2E; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; margin-bottom: 10px;">
+                                <i class="fa-solid fa-calendar-xmark"></i> {{ vendor.unavailability_reason }}
+                            </div>
+                        {% endif %}
+
                         <!-- Connect Action Form -->
-                        <form action="/connect/{{ vendor.vendor_id }}" method="POST" onsubmit="return confirm('Book and reveal direct contact information for {{ vendor.business_name }}?');">
-                            <input type="hidden" name="wedding_date" value="{{ filters.date }}">
-                            <input type="hidden" name="agreed_price" value="{{ vendor.base_price }}">
-                            <button type="submit" class="btn-primary" style="padding: 10px; font-size: 14px; text-transform: none; letter-spacing: 0;">
-                                <i class="fa-solid fa-phone"></i> Book & Connect Direct
+                        <form action="/connect/{{ vendor.vendor_id }}" method="POST" onsubmit="return confirm('Send booking request to {{ vendor.business_name }} for {{ filters.date or session.get(\'wedding_date\', \'your wedding date\') }}? Agreed final price: ₹{{ "{:,.2f}".format(vendor.final_price) }}');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <input type="hidden" name="wedding_date" value="{{ filters.date or session.get('wedding_date', '') }}">
+                            
+                            <button type="submit" class="btn-primary" 
+                                    {% if filters.date and not vendor.is_available %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}
+                                    style="padding: 10px; font-size: 14px; text-transform: none; letter-spacing: 0;">
+                                <i class="fa-solid fa-paper-plane"></i> Send Booking Request
                             </button>
                         </form>
                     </div>
                 </div>
+
             </div>
         {% endfor %}
     </div>
 {% else %}
     <div style="text-align: center; padding: 60px 20px; color: var(--muted-gold); background-color: var(--pure-white); border-radius: var(--border-radius); border: 1px solid rgba(212, 175, 55, 0.2);">
         <i class="fa-solid fa-face-frown" style="font-size: 48px; margin-bottom: 15px;"></i>
-        <p style="font-size: 18px; font-weight: 500; margin-bottom: 5px;">No matching vendors found</p>
-        <p style="font-size: 14px; margin-bottom: 20px;">Try adjusting your filters, increasing your budget limit, or selecting a different date.</p>
+        <p style="font-size: 18px; font-weight: 500; margin-bottom: 5px;">No verified vendors found matching your criteria</p>
+        <p style="font-size: 14px; margin-bottom: 20px;">Try adjusting your filters, increasing your max budget limit, or selecting a different date.</p>
         <a href="/budget" class="btn-upload" style="text-decoration: none; padding: 8px 25px;"><i class="fa-solid fa-wallet"></i> Adjust Budget Settings</a>
     </div>
 {% endif %}

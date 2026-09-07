@@ -11,6 +11,8 @@
     
     <div class="auth-body">
         <form action="{{ url_for('register') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
             <!-- Core Fields -->
             <div class="form-group">
                 <label for="full_name"><i class="fa-solid fa-user"></i> Full Name / Business Owner Name</label>
@@ -98,7 +100,7 @@
         if (role === 'vendor') {
             vendorFields.style.display = 'block';
             vendorInputs.forEach(input => {
-                if (input.id !== 'description') { // description is optional
+                if (input.id !== 'description') {
                     input.required = true;
                 }
             });

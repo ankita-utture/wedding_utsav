@@ -5,7 +5,7 @@
 {% block content %}
 <div class="welcome-section">
     <h1>Smart Budget Optimizer</h1>
-    <p>Define your wedding goals, and our algorithm will split your budget dynamically.</p>
+    <p>Define your wedding goals, and our algorithm will split your budget dynamically across selected services.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-bottom: 50px;">
@@ -16,6 +16,8 @@
         </h2>
         
         <form action="{{ url_for('budget_page') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
             <div class="form-group">
                 <label for="total_budget"><i class="fa-solid fa-indian-rupee-sign"></i> Total Wedding Budget (₹)</label>
                 <input type="number" id="total_budget" name="total_budget" class="form-control" placeholder="e.g. 500000" min="5000" value="{{ budget.total_budget if budget else '' }}" required>

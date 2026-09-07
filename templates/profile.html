@@ -12,6 +12,7 @@
             </div>
             
             <form method="POST" action="{{ url_for('upload_profile_pic') }}" enctype="multipart/form-data" class="profile-upload-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <input type="file" name="profile_pic" accept="image/*" class="file-input" required>
                 <button type="submit" class="btn-upload"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo</button>
             </form>
@@ -25,7 +26,7 @@
         <!-- Personal Details -->
         <div class="profile-info">
             <h3 style="font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid rgba(94, 25, 37, 0.1); padding-bottom: 5px;">
-                <i class="fa-solid fa-user-gear"></i> Personal Details
+                <i class="fa-solid fa-user-gear"></i> Account Overview
             </h3>
             <p><strong>Email:</strong> {{ current_user.email }}</p>
             <p><strong>Phone:</strong> {{ current_user.phone }}</p>
@@ -33,26 +34,26 @@
         </div>
     </div>
 
-    <!-- If User is a Customer: Show Wedding Dashboard Summary -->
+    <!-- If User is a Customer: Show Wedding Budget & Booking Pipeline -->
     {% if current_user.role == 'customer' %}
         <!-- Budget Section -->
         <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px; margin-bottom: 30px;">
             <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
-                <i class="fa-solid fa-calculator"></i> My Wedding Budget Plan
+                <i class="fa-solid fa-calculator"></i> My Wedding Budget Summary
             </h2>
             {% if budget %}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                        <p style="font-size: 16px; margin-bottom: 8px;"><strong>Total Budget:</strong></p>
+                        <p style="font-size: 15px; margin-bottom: 5px; color: var(--muted-gold);">Configured Total Budget:</p>
                         <p style="font-size: 32px; font-weight: bold; color: var(--royal-maroon); font-family: 'Playfair Display', serif;">
                             ₹{{ "{:,.2f}".format(budget.total_budget) }}
                         </p>
                     </div>
-                    <div style="font-size: 15px; display: flex; flex-direction: column; gap: 8px; border-left: 2px solid var(--gold); padding-left: 20px;">
-                        <p><strong><i class="fa-solid fa-hotel"></i> Venue Budget:</strong> ₹{{ "{:,.2f}".format(budget.venue_allocated) }}</p>
-                        <p><strong><i class="fa-solid fa-plate-wheat"></i> Catering Budget:</strong> ₹{{ "{:,.2f}".format(budget.catering_allocated) }}</p>
-                        <p><strong><i class="fa-solid fa-music"></i> DJ & Sound Budget:</strong> ₹{{ "{:,.2f}".format(budget.dj_allocated) }}</p>
-                        <p><strong><i class="fa-solid fa-wand-magic-sparkles"></i> Parlour Budget:</strong> ₹{{ "{:,.2f}".format(budget.makeup_allocated) }}</p>
+                    <div style="font-size: 14px; display: flex; flex-direction: column; gap: 6px; border-left: 2px solid var(--gold); padding-left: 20px;">
+                        <p><strong><i class="fa-solid fa-hotel"></i> Venue:</strong> ₹{{ "{:,.2f}".format(budget.venue_allocated) }}</p>
+                        <p><strong><i class="fa-solid fa-plate-wheat"></i> Catering:</strong> ₹{{ "{:,.2f}".format(budget.catering_allocated) }}</p>
+                        <p><strong><i class="fa-solid fa-music"></i> DJ:</strong> ₹{{ "{:,.2f}".format(budget.dj_allocated) }}</p>
+                        <p><strong><i class="fa-solid fa-wand-magic-sparkles"></i> Parlour:</strong> ₹{{ "{:,.2f}".format(budget.makeup_allocated) }}</p>
                     </div>
                 </div>
             {% else %}
@@ -63,43 +64,146 @@
             {% endif %}
         </div>
 
-        <!-- Contacted Vendors Section -->
-        <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px;">
+        <!-- Bookings Timeline & Payment Modal Handler -->
+        <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 30px; margin-bottom: 30px;">
             <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
-                <i class="fa-solid fa-address-book"></i> Contacted Vendors (My Choices)
+                <i class="fa-solid fa-address-book"></i> My Vendor Bookings Pipeline
             </h2>
+
+            {% if pay_booking %}
+                <!-- MOCK SANDBOX PAYMENT MODAL / CARD -->
+                <div style="background-color: var(--soft-cream); border: 2px solid var(--gold); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h3 style="color: var(--royal-maroon); font-size: 20px; margin-bottom: 10px;">
+                        <i class="fa-solid fa-credit-card"></i> Pay 20% Advance Payment (Sandbox / Demo)
+                    </h3>
+                    <p style="font-size: 14px; margin-bottom: 15px;">
+                        Paying advance for <strong>{{ pay_booking.business_name }}</strong> on <strong>{{ pay_booking.wedding_date }}</strong>.
+                    </p>
+
+                    <div style="background: #ffffff; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px;">
+                        <p>Total Agreed Price: <strong>₹{{ "{:,.2f}".format(pay_booking.final_price) }}</strong></p>
+                        <p style="color: #2EAE60; font-weight: bold; font-size: 16px; margin-top: 5px;">
+                            Required 20% Advance: ₹{{ "{:,.2f}".format(pay_booking.advance_required) }}
+                        </p>
+                    </div>
+
+                    <form action="/booking/{{ pay_booking.booking_id }}/pay" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <div class="form-group">
+                            <label for="payment_method"><i class="fa-solid fa-wallet"></i> Select Payment Method (Mock Sandbox):</label>
+                            <select id="payment_method" name="payment_method" class="form-control" required>
+                                <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+                                <option value="CreditCard">Credit / Debit Card</option>
+                                <option value="NetBanking">Net Banking</option>
+                            </select>
+                            <small style="display: block; margin-top: 5px; color: var(--muted-gold);">
+                                * Sandbox simulation: No actual financial charges will occur. No sensitive credentials stored.
+                            </small>
+                        </div>
+
+                        <div style="display: flex; gap: 10px;">
+                            <button type="submit" class="btn-primary" style="flex: 1;"><i class="fa-solid fa-lock"></i> Complete 20% Advance Payment</button>
+                            <a href="/profile" class="btn-upload" style="text-decoration: none; padding: 12px 20px; border-radius: 8px; text-align: center;">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+
             {% if bookings %}
                 <div style="display: flex; flex-direction: column; gap: 20px;">
                     {% for booking in bookings %}
                         <div style="background-color: var(--soft-cream); border-left: 5px solid var(--royal-maroon); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
-                            <div>
-                                <h3 style="font-size: 18px; margin-bottom: 5px;">{{ booking.business_name }}</h3>
+                            <div style="flex: 1; min-width: 250px;">
+                                <h3 style="font-size: 18px; margin-bottom: 5px; color: var(--royal-maroon);">{{ booking.business_name }}</h3>
                                 <p style="font-size: 13px; text-transform: uppercase; font-weight: bold; color: var(--gold); margin-bottom: 10px;">
                                     <i class="fa-solid fa-tag"></i> {{ booking.service_type }}
                                 </p>
                                 <p style="font-size: 14px; margin-bottom: 5px;"><strong><i class="fa-solid fa-phone"></i> Phone:</strong> {{ booking.contact_info }}</p>
                                 <p style="font-size: 14px; margin-bottom: 5px;"><strong><i class="fa-solid fa-location-dot"></i> Location:</strong> {{ booking.location }}</p>
-                                <p style="font-size: 14px;"><strong><i class="fa-solid fa-calendar-day"></i> Wedding Date:</strong> {{ booking.wedding_date }}</p>
+                                <p style="font-size: 14px; margin-bottom: 5px;"><strong><i class="fa-solid fa-calendar-day"></i> Date:</strong> {{ booking.wedding_date }}</p>
+                                <p style="font-size: 14px; margin-bottom: 5px;"><strong><i class="fa-solid fa-indian-rupee-sign"></i> Final Price Snapshot:</strong> ₹{{ "{:,.2f}".format(booking.final_price) }}</p>
+                                <p style="font-size: 13px; color: var(--muted-gold);">
+                                    20% Advance: ₹{{ "{:,.2f}".format(booking.advance_required) }} | Paid: ₹{{ "{:,.2f}".format(booking.advance_paid) }}
+                                </p>
+
+                                <div style="margin-top: 10px;">
+                                    <strong>Status:</strong>
+                                    {% if booking.status == 'PENDING' %}
+                                        <span style="background-color: #FDF7E7; color: #E3A813; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-clock"></i> PENDING VENDOR ACCEPTANCE
+                                        </span>
+                                    {% elif booking.status == 'PAYMENT_PENDING' %}
+                                        <span style="background-color: #E8F4FD; color: #1D5B8C; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-credit-card"></i> VENDOR ACCEPTED - PAY ADVANCE
+                                        </span>
+                                    {% elif booking.status == 'CONFIRMED' %}
+                                        <span style="background-color: #E2F4E9; color: #1A5C37; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-circle-check"></i> CONFIRMED
+                                        </span>
+                                    {% elif booking.status == 'COMPLETED' %}
+                                        <span style="background-color: #D4AF37; color: #5E1925; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-trophy"></i> COMPLETED
+                                        </span>
+                                    {% elif booking.status == 'REJECTED' %}
+                                        <span style="background-color: #FCE8E6; color: #A82E2E; padding: 3px 8px; border-radius: 10px; font-size: 12px;">REJECTED</span>
+                                    {% else %}
+                                        <span style="background-color: #FCE8E6; color: #A82E2E; padding: 3px 8px; border-radius: 10px; font-size: 12px;">{{ booking.status }}</span>
+                                    {% endif %}
+                                </div>
                             </div>
                             
-                            <!-- Leave Review Section -->
-                            <div style="width: 100%; max-width: 250px; background-color: var(--pure-white); border: 1px solid rgba(0,0,0,0.05); padding: 15px; border-radius: 8px;">
-                                <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--royal-maroon);">Leave a Review</h4>
-                                <form action="/submit_review/{{ booking.vendor_id }}" method="POST">
-                                    <div class="form-group" style="margin-bottom: 10px;">
-                                        <select name="rating" class="form-control" style="padding: 6px; font-size: 13px;" required>
-                                            <option value="5" selected>5 Stars (Excellent)</option>
-                                            <option value="4">4 Stars (Good)</option>
-                                            <option value="3">3 Stars (Average)</option>
-                                            <option value="2">2 Stars (Poor)</option>
-                                            <option value="1">1 Star (Terrible)</option>
-                                        </select>
+                            <!-- Action Column: Payment, Cancellation, or Review -->
+                            <div style="width: 100%; max-width: 280px; background-color: var(--pure-white); border: 1px solid rgba(0,0,0,0.05); padding: 15px; border-radius: 8px;">
+                                {% if booking.status == 'PAYMENT_PENDING' %}
+                                    <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--royal-maroon);">Action Required</h4>
+                                    <a href="/booking/{{ booking.booking_id }}/pay" class="btn-primary" style="display: block; text-align: center; text-decoration: none; font-size: 13px; padding: 8px;">
+                                        <i class="fa-solid fa-credit-card"></i> Pay 20% Advance (₹{{ "{:,.2f}".format(booking.advance_required) }})
+                                    </a>
+                                {% endif %}
+
+                                {% if booking.status in ('PENDING', 'ACCEPTED', 'PAYMENT_PENDING', 'CONFIRMED') %}
+                                    <form action="/booking/{{ booking.booking_id }}/cancel" method="POST" style="margin-top: 10px;" onsubmit="return confirm('Cancel this booking? Applicable refund will be processed according to cancellation policy.');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input type="text" name="cancellation_reason" placeholder="Reason for cancellation..." class="form-control" style="font-size: 12px; padding: 4px; margin-bottom: 6px;" required>
+                                        <button type="submit" class="btn-upload" style="background-color: #A82E2E; border-color: #A82E2E; width: 100%; font-size: 12px; padding: 6px;">
+                                            <i class="fa-solid fa-xmark"></i> Cancel Booking
+                                        </button>
+                                    </form>
+                                {% endif %}
+
+                                {% if booking.status == 'COMPLETED' %}
+                                    {% if booking.booking_id in reviewed_booking_ids %}
+                                        <div style="text-align: center; color: #2EAE60; font-size: 13px; font-weight: bold;">
+                                            <i class="fa-solid fa-star"></i> Review Submitted!
+                                        </div>
+                                    {% else %}
+                                        <h4 style="font-size: 14px; margin-bottom: 8px; color: var(--royal-maroon);">Review Vendor</h4>
+                                        <form action="/submit_review/{{ booking.vendor_id }}" method="POST">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <input type="hidden" name="booking_id" value="{{ booking.booking_id }}">
+                                            <div class="form-group" style="margin-bottom: 8px;">
+                                                <select name="rating" class="form-control" style="padding: 4px; font-size: 12px;" required>
+                                                    <option value="5" selected>5 Stars (Excellent)</option>
+                                                    <option value="4">4 Stars (Good)</option>
+                                                    <option value="3">3 Stars (Average)</option>
+                                                    <option value="2">2 Stars (Poor)</option>
+                                                    <option value="1">1 Star (Terrible)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group" style="margin-bottom: 8px;">
+                                                <textarea name="comment" class="form-control" rows="2" style="padding: 4px; font-size: 12px;" placeholder="Write a comment..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn-upload" style="width: 100%; font-size: 12px; padding: 6px;"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if booking.status in ('CANCELLED_BY_CUSTOMER', 'CANCELLED_BY_VENDOR') %}
+                                    <div style="font-size: 12px; color: #A82E2E;">
+                                        <strong>Cancelled by {{ booking.cancelled_by }}</strong><br>
+                                        Refund Processed: ₹{{ "{:,.2f}".format(booking.refund_amount) }}
                                     </div>
-                                    <div class="form-group" style="margin-bottom: 10px;">
-                                        <textarea name="comment" class="form-control" rows="2" style="padding: 6px; font-size: 13px;" placeholder="Write a comment..." required></textarea>
-                                    </div>
-                                    <button type="submit" class="btn-upload" style="width: 100%; font-size: 12px; padding: 6px;"><i class="fa-solid fa-paper-plane"></i> Submit</button>
-                                </form>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
@@ -107,9 +211,23 @@
             {% else %}
                 <div style="text-align: center; padding: 20px 0; color: var(--muted-gold);">
                     <i class="fa-solid fa-comments-dollar" style="font-size: 36px; margin-bottom: 10px;"></i>
-                    <p>You haven't contacted any vendors yet. Find budget-friendly partners on the Home dashboard!</p>
+                    <p>You haven't requested any vendors yet. Find budget-friendly partners on the Home dashboard!</p>
                 </div>
             {% endif %}
+        </div>
+
+        <!-- Soft Delete Account Danger Zone -->
+        <div class="help-card" style="border: 2px solid #A82E2E; border-radius: var(--border-radius); padding: 25px;">
+            <h3 style="color: #A82E2E; font-size: 18px; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone — Soft Delete Account</h3>
+            <p style="font-size: 13px; color: var(--charcoal); margin-bottom: 15px;">
+                Deleting your customer account will anonymize your profile while safely archiving your past booking and financial records for compliance.
+            </p>
+            <form action="{{ url_for('delete_account') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete your account? Your active session will be terminated.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn-upload" style="background-color: #A82E2E; border-color: #A82E2E; font-size: 13px; padding: 8px 20px;">
+                    <i class="fa-solid fa-user-slash"></i> Delete My Account
+                </button>
+            </form>
         </div>
     {% endif %}
 </div>

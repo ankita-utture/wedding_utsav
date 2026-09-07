@@ -1,12 +1,55 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Wedding Utsav{% endblock %}
+{% block title %}Customer Dashboard - Wedding Utsav{% endblock %}
 
 {% block content %}
 <div class="welcome-section">
     <h1>Subho Vivaah! Welcome, {{ session.get('name') }}</h1>
-    <p>Select a service to start planning your perfect royal wedding.</p>
+    <p>Track your wedding budget, manage bookings, and discover verified local partners.</p>
 </div>
+
+<!-- Customer Dashboard Stats Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+    <div class="card" style="cursor: default; padding: 20px; border-top: 4px solid var(--royal-maroon);">
+        <div style="font-size: 24px; color: var(--gold); margin-bottom: 8px;"><i class="fa-solid fa-calendar-heart"></i></div>
+        <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--royal-maroon);">Wedding Date</h3>
+        <p style="font-size: 18px; font-weight: bold; color: var(--charcoal);">{{ stats.wedding_date }}</p>
+    </div>
+
+    <div class="card" style="cursor: default; padding: 20px; border-top: 4px solid var(--gold);">
+        <div style="font-size: 24px; color: var(--gold); margin-bottom: 8px;"><i class="fa-solid fa-wallet"></i></div>
+        <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--royal-maroon);">Total Budget</h3>
+        <p style="font-size: 18px; font-weight: bold; color: var(--charcoal);">₹{{ "{:,.2f}".format(stats.total_budget) }}</p>
+    </div>
+
+    <div class="card" style="cursor: default; padding: 20px; border-top: 4px solid #2E8B57;">
+        <div style="font-size: 24px; color: #2E8B57; margin-bottom: 8px;"><i class="fa-solid fa-handshake"></i></div>
+        <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--royal-maroon);">Committed Budget</h3>
+        <p style="font-size: 18px; font-weight: bold; color: #2E8B57;">₹{{ "{:,.2f}".format(stats.committed_budget) }}</p>
+    </div>
+
+    <div class="card" style="cursor: default; padding: 20px; border-top: 4px solid #2EAE60;">
+        <div style="font-size: 24px; color: #2EAE60; margin-bottom: 8px;"><i class="fa-solid fa-piggy-bank"></i></div>
+        <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--royal-maroon);">Remaining Budget</h3>
+        <p style="font-size: 18px; font-weight: bold; color: #2EAE60;">₹{{ "{:,.2f}".format(stats.remaining_budget) }}</p>
+    </div>
+
+    <div class="card" style="cursor: default; padding: 20px; border-top: 4px solid var(--muted-gold);">
+        <div style="font-size: 24px; color: var(--muted-gold); margin-bottom: 8px;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--royal-maroon);">Pending Requests</h3>
+        <p style="font-size: 18px; font-weight: bold; color: var(--charcoal);">{{ stats.pending_requests }}</p>
+    </div>
+
+    <div class="card" style="cursor: default; padding: 20px; border-top: 4px solid #1A5C37;">
+        <div style="font-size: 24px; color: #1A5C37; margin-bottom: 8px;"><i class="fa-solid fa-circle-check"></i></div>
+        <h3 style="font-size: 16px; margin-bottom: 4px; color: var(--royal-maroon);">Confirmed Bookings</h3>
+        <p style="font-size: 18px; font-weight: bold; color: #1A5C37;">{{ stats.confirmed_bookings }}</p>
+    </div>
+</div>
+
+<h2 style="font-size: 22px; margin-bottom: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 8px;">
+    <i class="fa-solid fa-bell-concierge"></i> Explore Wedding Services
+</h2>
 
 <div class="dashboard-grid">
     <!-- 1. Venue Selection -->

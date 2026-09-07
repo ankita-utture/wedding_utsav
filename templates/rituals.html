@@ -16,6 +16,8 @@
         </h2>
         
         <form action="{{ url_for('rituals_page') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            
             <div class="form-group">
                 <label for="haldi"><i class="fa-solid fa-seedling" style="color: #E3A813;"></i> Haldi Ceremony Date</label>
                 <input type="date" id="haldi" name="haldi_date" class="form-control" value="{{ rituals.haldi_date if rituals else '' }}">
@@ -48,10 +50,8 @@
         
         {% if rituals and (rituals.haldi_date or rituals.mehendi_date or rituals.sangeet_date or rituals.wedding_date) %}
             <div style="position: relative; padding-left: 30px; margin-top: 20px;">
-                <!-- Vertical Timeline Line -->
                 <div style="position: absolute; left: 9px; top: 10px; bottom: 10px; width: 4px; background-color: var(--gold); border-radius: 2px;"></div>
                 
-                <!-- Haldi Stop -->
                 {% if rituals.haldi_date %}
                     <div style="position: relative; margin-bottom: 30px;">
                         <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #E3A813; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
@@ -62,7 +62,6 @@
                     </div>
                 {% endif %}
 
-                <!-- Mehendi Stop -->
                 {% if rituals.mehendi_date %}
                     <div style="position: relative; margin-bottom: 30px;">
                         <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #2E8B57; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
@@ -73,7 +72,6 @@
                     </div>
                 {% endif %}
 
-                <!-- Sangeet Stop -->
                 {% if rituals.sangeet_date %}
                     <div style="position: relative; margin-bottom: 30px;">
                         <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #A52A2A; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>
@@ -84,7 +82,6 @@
                     </div>
                 {% endif %}
 
-                <!-- Wedding Stop -->
                 {% if rituals.wedding_date %}
                     <div style="position: relative;">
                         <div style="position: absolute; left: -30px; top: 4px; width: 22px; height: 22px; border-radius: 50%; background-color: #D32F2F; border: 3px solid var(--ivory); box-shadow: 0 0 5px rgba(0,0,0,0.2); z-index: 2;"></div>

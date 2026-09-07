@@ -3,66 +3,265 @@
 {% block title %}Vendor Dashboard - Wedding Utsav{% endblock %}
 
 {% block content %}
+
 <div class="welcome-section">
     <h1>Vendor Workspace: {{ vendor.business_name if vendor else session.get('name') }}</h1>
-    <p>Manage your services, update pricing, and view customer booking inquiries.</p>
+    <p>Manage business profile, set prices & discounts, block unavailable dates, and manage customer booking requests.</p>
+</div>
+
+<!-- Vendor Statistics Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 40px;">
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid var(--royal-maroon);">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Total Inquiries</h4>
+        <p style="font-size: 22px; font-weight: bold;">{{ stats.total_inquiries }}</p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid #E3A813;">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Pending Requests</h4>
+        <p style="font-size: 22px; font-weight: bold; color: #E3A813;">{{ stats.pending_requests }}</p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid #2E8B57;">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Confirmed Bookings</h4>
+        <p style="font-size: 22px; font-weight: bold; color: #2E8B57;">{{ stats.confirmed_bookings }}</p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid #1A5C37;">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Completed Events</h4>
+        <p style="font-size: 22px; font-weight: bold; color: #1A5C37;">{{ stats.completed_bookings }}</p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid var(--gold);">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Average Rating</h4>
+        <p style="font-size: 22px; font-weight: bold; color: var(--gold);">
+            <i class="fa-solid fa-star"></i> {{ stats.avg_rating }} ({{ stats.review_count }})
+        </p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid var(--dark-maroon);">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Gross Value</h4>
+        <p style="font-size: 18px; font-weight: bold;">₹{{ "{:,.2f}".format(stats.total_booking_value) }}</p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid #A82E2E;">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Platform Fee (5%)</h4>
+        <p style="font-size: 18px; font-weight: bold; color: #A82E2E;">₹{{ "{:,.2f}".format(stats.platform_commission) }}</p>
+    </div>
+    <div class="card" style="cursor: default; padding: 15px; border-top: 4px solid #2EAE60;">
+        <h4 style="font-size: 13px; color: var(--muted-gold);">Net Earnings</h4>
+        <p style="font-size: 18px; font-weight: bold; color: #2EAE60;">₹{{ "{:,.2f}".format(stats.vendor_earnings) }}</p>
+    </div>
 </div>
 
 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 50px;">
-    <!-- Vendor Profile Details Card -->
-    <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 25px;">
-        <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
-            <i class="fa-solid fa-briefcase"></i> Service Overview
-        </h2>
-        {% if vendor %}
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <p><strong>Business Name:</strong><br>{{ vendor.business_name }}</p>
-                <p><strong>Service Category:</strong><br><span style="text-transform: capitalize; background-color: var(--royal-maroon); color: var(--ivory); padding: 3px 10px; border-radius: 12px; font-size: 13px;">{{ vendor.service_type }}</span></p>
-                <p><strong>Base Price:</strong><br>₹{{ vendor.base_price }} {% if vendor.service_type == 'catering' %}per plate{% else %}per day/event{% endif %}</p>
-                {% if vendor.service_type == 'venue' %}
-                    <p><strong>Hall Capacity:</strong><br>{{ vendor.capacity }} guests</p>
-                {% endif %}
-                <p><strong>Location:</strong><br>{{ vendor.location }}</p>
-                <p><strong>Verification Status:</strong><br>
-                    {% if vendor.is_verified == 1 %}
-                        <span style="color: #2EAE60; font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Verified Partner</span>
-                    {% else %}
-                        <span style="color: var(--muted-gold); font-weight: bold;"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending Verification</span>
+
+    <!-- Left Column: Settings & Availability -->
+    <div style="display: flex; flex-direction: column; gap: 30px;">
+        
+        <!-- Vendor Profile Details & Pricing Form -->
+        <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 25px;">
+            <h2 style="font-size: 18px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+                <i class="fa-solid fa-store"></i> Business & Pricing Settings
+            </h2>
+
+            {% if vendor %}
+                <form action="{{ url_for('update_vendor_settings') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="form-group">
+                        <label>Verification Status:</label><br>
+                        {% if vendor.verification_status == 'VERIFIED' %}
+                            <span style="color: #2EAE60; font-weight: bold;"><i class="fa-solid fa-circle-check"></i> Verified Partner</span>
+                        {% elif vendor.verification_status == 'PENDING' %}
+                            <span style="color: #E3A813; font-weight: bold;"><i class="fa-solid fa-circle-notch fa-spin"></i> Pending Verification</span>
+                        {% elif vendor.verification_status == 'CHANGES_REQUESTED' %}
+                            <span style="color: #D32F2F; font-weight: bold;"><i class="fa-solid fa-triangle-exclamation"></i> Changes Requested</span>
+                        {% elif vendor.verification_status == 'SUSPENDED' %}
+                            <span style="color: #A82E2E; font-weight: bold;"><i class="fa-solid fa-ban"></i> Account Suspended</span>
+                        {% else %}
+                            <span style="color: #A82E2E; font-weight: bold;">{{ vendor.verification_status }}</span>
+                        {% endif %}
+                        {% if vendor.rejection_reason %}
+                            <p style="font-size: 12px; color: #A82E2E; margin-top: 4px;">Reason/Notes: {{ vendor.rejection_reason }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="business_name"><i class="fa-solid fa-briefcase"></i> Business Name</label>
+                        <input type="text" id="business_name" name="business_name" class="form-control" value="{{ vendor.business_name }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="base_price"><i class="fa-solid fa-indian-rupee-sign"></i> Base Price (₹)</label>
+                        <input type="number" id="base_price" name="base_price" class="form-control" value="{{ vendor.base_price }}" required min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="discount_type"><i class="fa-solid fa-tags"></i> Offer Vendor Discount</label>
+                        <select id="discount_type" name="discount_type" class="form-control">
+                            <option value="none" {% if vendor.discount_type == 'none' %}selected{% endif %}>No Discount</option>
+                            <option value="percentage" {% if vendor.discount_type == 'percentage' %}selected{% endif %}>Percentage (%) Discount</option>
+                            <option value="fixed" {% if vendor.discount_type == 'fixed' %}selected{% endif %}>Fixed Amount (₹) Discount</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="discount_value">Discount Value</label>
+                        <input type="number" id="discount_value" name="discount_value" class="form-control" value="{{ vendor.discount_value }}" step="0.1" min="0">
+                    </div>
+
+                    {% if vendor.service_type == 'venue' %}
+                        <div class="form-group">
+                            <label for="capacity">Hall Guest Capacity</label>
+                            <input type="number" id="capacity" name="capacity" class="form-control" value="{{ vendor.capacity or '' }}">
+                        </div>
                     {% endif %}
-                </p>
-            </div>
-        {% else %}
-            <p>No business details found. Please contact support.</p>
-        {% endif %}
+
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" class="form-control" value="{{ vendor.location }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact_info">Contact Phone</label>
+                        <input type="text" id="contact_info" name="contact_info" class="form-control" value="{{ vendor.contact_info }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="3">{{ vendor.description }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="font-size: 14px; padding: 10px;">Save Profile Changes</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <!-- Date Availability Blocker -->
+        <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 25px;">
+            <h2 style="font-size: 18px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
+                <i class="fa-solid fa-calendar-xmark"></i> Block Dates Availability
+            </h2>
+
+            <form action="{{ url_for('toggle_availability') }}" method="POST" style="margin-bottom: 20px;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="block">
+                
+                <div class="form-group">
+                    <label for="blocked_date">Select Date to Block:</label>
+                    <input type="date" id="blocked_date" name="blocked_date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="reason">Reason (Optional):</label>
+                    <input type="text" id="reason" name="reason" class="form-control" placeholder="e.g. Maintenance, Personal">
+                </div>
+                <button type="submit" class="btn-upload" style="width: 100%; border-radius: 8px; padding: 8px;"><i class="fa-solid fa-lock"></i> Block Date</button>
+            </form>
+
+            <h4 style="font-size: 14px; margin-bottom: 10px;">Currently Blocked Dates:</h4>
+            {% if blocked_dates %}
+                <ul style="list-style: none; padding: 0;">
+                    {% for bd in blocked_dates %}
+                        <li style="display: flex; justify-content: space-between; align-items: center; background: var(--soft-cream); padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 13px;">
+                            <span><strong>{{ bd.blocked_date }}</strong> ({{ bd.reason }})</span>
+                            <form action="{{ url_for('toggle_availability') }}" method="POST" style="margin: 0;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="hidden" name="action" value="unblock">
+                                <input type="hidden" name="blocked_date" value="{{ bd.blocked_date }}">
+                                <button type="submit" style="background: none; border: none; color: #A82E2E; cursor: pointer;" title="Unblock"><i class="fa-solid fa-trash"></i></button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="font-size: 13px; color: var(--muted-gold);">No manual date blocks active.</p>
+            {% endif %}
+        </div>
+
     </div>
 
-    <!-- Booking Requests Log -->
+    <!-- Right Column: Customer Booking Inquiries & Manager -->
     <div class="help-card" style="border: 2px solid var(--gold); border-radius: var(--border-radius); padding: 25px;">
         <h2 style="font-size: 20px; border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin-bottom: 20px;">
-            <i class="fa-solid fa-address-book"></i> Customer Inquiries (Leads)
+            <i class="fa-solid fa-address-book"></i> Customer Booking Requests & Pipeline
         </h2>
-        
+
         {% if bookings %}
             <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 15px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
                     <thead>
                         <tr style="border-bottom: 2px solid var(--royal-maroon); color: var(--royal-maroon); font-weight: bold;">
-                            <th style="padding: 10px;">Customer Name</th>
-                            <th style="padding: 10px;">Phone Number</th>
-                            <th style="padding: 10px;">Requested Date</th>
+                            <th style="padding: 10px;">Customer Details</th>
+                            <th style="padding: 10px;">Wedding Date</th>
+                            <th style="padding: 10px;">Agreed Price</th>
                             <th style="padding: 10px;">Status</th>
+                            <th style="padding: 10px;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for booking in bookings %}
-                            <tr style="border-bottom: 1px solid rgba(0,0,0,0.05); hover: background-color: var(--soft-cream);">
-                                <td style="padding: 12px 10px; font-weight: 500;">{{ booking.customer_name }}</td>
-                                <td style="padding: 12px 10px;">{{ booking.customer_phone }}</td>
-                                <td style="padding: 12px 10px; font-weight: 600; color: var(--royal-maroon);">{{ booking.wedding_date }}</td>
+                            <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);" class="booking-row">
                                 <td style="padding: 12px 10px;">
-                                    <span style="background-color: #E2F4E9; color: #1A5C37; padding: 4px 10px; border-radius: 12px; font-size: 13px;">
-                                        <i class="fa-solid fa-phone"></i> Contacted
-                                    </span>
+                                    <strong>{{ booking.customer_name }}</strong><br>
+                                    <span style="font-size: 12px; color: var(--muted-gold);"><i class="fa-solid fa-phone"></i> {{ booking.customer_phone }}</span><br>
+                                    <span style="font-size: 12px; color: var(--muted-gold);"><i class="fa-solid fa-envelope"></i> {{ booking.customer_email }}</span>
+                                </td>
+                                <td style="padding: 12px 10px; font-weight: 600; color: var(--royal-maroon);">
+                                    {{ booking.wedding_date }}
+                                </td>
+                                <td style="padding: 12px 10px;">
+                                    ₹{{ "{:,.2f}".format(booking.final_price) }}<br>
+                                    <span style="font-size: 11px; color: #2EAE60;">Net: ₹{{ "{:,.2f}".format(booking.vendor_earnings) }}</span>
+                                </td>
+                                <td style="padding: 12px 10px;">
+                                    {% if booking.status == 'PENDING' %}
+                                        <span style="background-color: #FDF7E7; color: #E3A813; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-clock"></i> PENDING
+                                        </span>
+                                    {% elif booking.status == 'PAYMENT_PENDING' %}
+                                        <span style="background-color: #E8F4FD; color: #1D5B8C; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-credit-card"></i> AWAITING ADVANCE
+                                        </span>
+                                    {% elif booking.status == 'CONFIRMED' %}
+                                        <span style="background-color: #E2F4E9; color: #1A5C37; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-circle-check"></i> CONFIRMED
+                                        </span>
+                                    {% elif booking.status == 'COMPLETED' %}
+                                        <span style="background-color: #D4AF37; color: #5E1925; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                            <i class="fa-solid fa-trophy"></i> COMPLETED
+                                        </span>
+                                    {% elif booking.status == 'REJECTED' %}
+                                        <span style="background-color: #FCE8E6; color: #A82E2E; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
+                                            REJECTED
+                                        </span>
+                                    {% else %}
+                                        <span style="background-color: #FCE8E6; color: #A82E2E; padding: 4px 10px; border-radius: 12px; font-size: 12px;">
+                                            {{ booking.status }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td style="padding: 12px 10px;">
+                                    {% if booking.status == 'PENDING' %}
+                                        <div style="display: flex; gap: 6px;">
+                                            <form action="/booking/{{ booking.booking_id }}/respond" method="POST">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <input type="hidden" name="action" value="accept">
+                                                <button type="submit" class="btn-upload" style="background-color: #2EAE60; border-color: #2EAE60; font-size: 11px; padding: 4px 8px;">
+                                                    <i class="fa-solid fa-check"></i> Accept
+                                                </button>
+                                            </form>
+                                            <form action="/booking/{{ booking.booking_id }}/respond" method="POST">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="btn-upload" style="background-color: #A82E2E; border-color: #A82E2E; font-size: 11px; padding: 4px 8px;">
+                                                    <i class="fa-solid fa-xmark"></i> Reject
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% elif booking.status == 'CONFIRMED' %}
+                                        <form action="/booking/{{ booking.booking_id }}/complete" method="POST">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn-upload" style="background-color: #D4AF37; color: #5E1925; border-color: #5E1925; font-size: 11px; padding: 4px 10px;">
+                                                <i class="fa-solid fa-flag-checkered"></i> Mark Completed
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span style="font-size: 12px; color: var(--muted-gold);">-</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
@@ -72,9 +271,10 @@
         {% else %}
             <div style="text-align: center; padding: 40px 20px; color: var(--muted-gold);">
                 <i class="fa-regular fa-folder-open" style="font-size: 40px; margin-bottom: 10px;"></i>
-                <p>No booking inquiries yet. When customers click to get your contact details, their requests will appear here!</p>
+                <p>No booking inquiries yet. When customers submit requests for your services, they will appear here!</p>
             </div>
         {% endif %}
     </div>
+
 </div>
 {% endblock %}
