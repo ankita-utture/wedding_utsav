@@ -1081,5 +1081,40 @@ def delete_review(review_id):
 def help_page():
     return render_template('help.html')
 
+# Create admin account
+@app.route('/create-admin')
+def create_admin():
+    conn = get_db_connection()
+
+    existing = conn.execute(
+        "SELECT * FROM users WHERE email = ?",
+        ("admin@weddingutsav.com",)
+    ).fetchone()
+
+    if existing:
+        conn.close()
+        return "Admin already exists!"
+
+    password_hash = generate_password_hash("Admin@123")
+
+    conn.execute("""
+        INSERT INTO users
+        (full_name, email, phone, password_hash, role, city, status)
+        VALUES (?, ?, ?, ?, 'admin', ?, 'active')
+    """, (
+        "Wedding Utsav Admin",
+        "admin@weddingutsav.com",
+        "9999999999",
+        password_hash,
+        "Kolhapur"
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return "Admin created successfully!"
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
